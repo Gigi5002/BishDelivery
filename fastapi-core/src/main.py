@@ -3,6 +3,7 @@ from fastapi import FastAPI, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
 from src.infrastructure.db.session import get_db
+from src.presentation.routers.auth import router as auth_router
 
 
 app = FastAPI(
@@ -10,6 +11,13 @@ app = FastAPI(
     description="Основной бэкенд-сервис доставки еды в Бишкеке",
     version="1.0.0"
 )
+
+app.include_router(auth_router)
+
+@app.get("/healthcheck", tags=["System"])
+async def healthcheck():
+    return {"status": "alive", "city": "Bishkek"}
+
 
 @app.get("/healthcheck", tags=["System"])
 async def healthcheck(db: AsyncSession = Depends(get_db)):
