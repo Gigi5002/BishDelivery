@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
 from src.infrastructure.db.session import get_db
 
+
 app = FastAPI(
     title="BishDelivery Core API",
     description="Основной бэкенд-сервис доставки еды в Бишкеке",
