@@ -5,7 +5,6 @@ from sqlalchemy import text
 from src.infrastructure.db.session import get_db
 from src.presentation.routers.auth import router as auth_router
 
-
 app = FastAPI(
     title="BishDelivery Core API",
     description="Основной бэкенд-сервис доставки еды в Бишкеке",
@@ -15,17 +14,11 @@ app = FastAPI(
 app.include_router(auth_router)
 
 @app.get("/healthcheck", tags=["System"])
-async def healthcheck():
-    return {"status": "alive", "city": "Bishkek"}
-
-
-@app.get("/healthcheck", tags=["System"])
 async def healthcheck(db: AsyncSession = Depends(get_db)):
     """
     Проверяет статус работоспособности API и подключения к PostgreSQL
     """
     try:
-        # Делаем ленивый тестовый запрос к БД
         await db.execute(text("SELECT 1"))
         db_status = "healthy"
     except Exception as e:
