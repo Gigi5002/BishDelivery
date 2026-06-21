@@ -1,47 +1,20 @@
-# telegram-bot/main.py
 import asyncio
 import logging
-import httpx
-from aiogram import Bot, Dispatcher, types
-from aiogram.filters import CommandStart
-from config import settings
+from aiogram import Bot, Dispatcher
+from src.config import settings
+# Добавляем src. к импорту хэндлера, чтобы путь шел от корня проекта
+from src.handlers.start import router as start_router
 
-# Настраиваем логи, чтобы видеть, что происходит с ботом
 logging.basicConfig(level=logging.INFO)
-
-bot = Bot(token=settings.BOT_TOKEN)
-dp = Dispatcher()
-
-
-@dp.message(CommandStart())
-async def cmd_start(message: types.Message):
-    """Хэндлер на команду /start"""
-    await message.answer(
-        f"Привет, {message.from_user.full_name}! 👋\n"
-        f"Добро пожаловать в службу доставки **BishDelivery**!\n\n"
-        f"Сейчас я проверю связь с нашим главным сервером..."
-    )
-
-    # Делаем запрос к нашему FastAPI бэкэнду! 🚀
-    try:
-        async with httpx.AsyncClient() as client:
-            response = await client.get(f"{settings.API_BASE_URL}/healthcheck")
-            if response.status_code == 200:
-                data = response.json()
-                await message.answer(
-                    f"✅ Связь с сервером установлена!\n"
-                    f"Статус бэкенда: {data['status']}\n"
-                    f"База данных: {data['database']}\n"
-                    f"Город обслуживания: {data['city']}"
-                )
-            else:
-                await message.answer("❌ Сервер ответил ошибкой. Технические работы.")
-    except Exception as e:
-        await message.answer("❌ Не удалось достучаться до бэкенда. Убедись, что FastAPI запущен!")
 
 
 async def main():
-    print("Бот успешно запущен и вышел на охоту за заказами!")
+    bot = Bot(token=settings.BOT_TOKEN)
+    dp = Dispatcher()
+
+    dp.include_router(start_router)
+
+    print("Бот успешно запущен через модульную структуру!")
     await dp.start_polling(bot)
 
 

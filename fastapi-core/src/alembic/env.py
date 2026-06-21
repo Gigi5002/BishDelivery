@@ -53,6 +53,7 @@ def run_migrations_offline() -> None:
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
+        include_object=include_object,
     )
 
     with context.begin_transaction():
@@ -72,7 +73,11 @@ def run_migrations_online() -> None:
     if isinstance(connectable, context.config.attributes.get("connection", ).__class__):
         # Если движок обычный синхронный
         with connectable.connect() as connection:
-            context.configure(connection=connection, target_metadata=target_metadata)
+            context.configure(
+                connection=connection,
+                target_metadata=target_metadata,
+                include_object=include_object,
+            )
             with context.begin_transaction():
                 context.run_migrations()
     else:
@@ -104,3 +109,23 @@ if context.is_offline_mode():
     run_migrations_offline()
 else:
     run_migrations_online()
+
+
+def include_object(object, name, type_, reflected, compare_to):
+    """
+    Фильтр: пропускает только наши таблицы и игнорирует системный мусор PostGIS (spatial_ref_sys, tiger, topology)
+    """
+    # Список системных таблиц и гео-объектов, которые нельзя трогать
+    ignored_namespaces = {'tiger', 'topology', 'tiger_data'}
+    ignored_tables = {'spatial_ref_sys', 'geocode_settings', 'geocode_settings_default', 'loader_platform',
+                      'loader_variables'}
+
+    # Если это таблица из системного слоя (схемы) PostGIS — игнорируем
+    if hasattr(object, 'schema') and object.schema in ignored_namespaces:
+        return False
+
+    # Если имя таблицы связано с картами — игнорируем
+    if type_ == "table" and (name in ignored_tables or name.startswith('pagc_') or name.startswith('zip_')):
+        return False
+
+    return True

@@ -25,3 +25,14 @@ async def register_user(user_data: UserCreateSchema, db: AsyncSession = Depends(
     # 2. Создаем пользователя (туда улетит уже захэшированный пароль)
     new_user = await user_repo.create_user(user_data)
     return new_user
+
+
+@router.get("/check-telegram/{telegram_id}", response_model=UserResponseSchema | None)
+async def check_telegram_user(telegram_id: int, db: AsyncSession = Depends(get_db)):
+    """
+    Проверяет, зарегистрирован ли пользователь с таким telegram_id в системе.
+    Если нет — возвращает null (None).
+    """
+    user_repo = UserRepository(db)
+    user = await user_repo.get_by_telegram_id(telegram_id)
+    return user
