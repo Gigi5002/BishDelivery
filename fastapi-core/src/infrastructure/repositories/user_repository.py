@@ -4,6 +4,8 @@ from sqlalchemy.future import select
 from src.infrastructure.db.models import UserTable
 from src.presentation.schemas.user import UserCreateSchema
 from src.infrastructure.security.password import hash_password
+from typing import Optional
+
 
 class UserRepository:
     def __init__(self, db: AsyncSession):
@@ -13,6 +15,13 @@ class UserRepository:
         """Ищет пользователя в БД по email (чтобы не было дубликатов)"""
         result = await self.db.execute(select(UserTable).where(UserTable.email == email))
         return result.scalar_one_or_none()
+
+    async def get_by_telegram_id(self, telegram_id: int) -> Optional[UserTable]:
+        """Ищет пользователя в базе данных по его Telegram ID"""
+        result = await self.db.execute(
+            select(UserTable).where(UserTable.telegram_id == telegram_id)
+        )
+        return result.scalars().first()
 
     async def create_user(self, user_dto: UserCreateSchema) -> UserTable:
         """Создает и сохраняет нового пользователя в PostgreSQL"""

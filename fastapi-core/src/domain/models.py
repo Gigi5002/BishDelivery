@@ -13,3 +13,4 @@ class UserDomain:
     role: str  # client, courier, restaurant_admin, super_admin
     is_active: bool
     created_at: datetime
+    telegram_id: Optional[int] = None

@@ -1,6 +1,7 @@
 # fastapi-core/src/infrastructure/db/models.py
 from datetime import datetime
-from sqlalchemy import Integer, String, Boolean, DateTime, text
+from typing import Optional
+from sqlalchemy import Integer, String, Boolean, DateTime, text, BigInteger
 from sqlalchemy.orm import Mapped, mapped_column
 from src.infrastructure.db.session import Base
 
@@ -23,8 +24,9 @@ class UserTable(Base):
 
     # Роль пользователя: client, courier, restaurant_admin, super_admin
     role: Mapped[str] = mapped_column(String(30), server_default="client", nullable=False)
-
     is_active: Mapped[bool] = mapped_column(Boolean, server_default="true", nullable=False)
+
+    telegram_id: Mapped[Optional[int]] = mapped_column(BigInteger, unique=True, nullable=True)
 
     # server_default=text("TIMEZONE('utc', now())") заставляет саму базу Postgres
     # автоматически ставить текущее время при создании записи
